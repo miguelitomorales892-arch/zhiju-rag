@@ -1,0 +1,26 @@
+# Build context is app/. Actual credentials must not enter the context.
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv
+**/venv
+**/node_modules
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage
+**/.coverage.*
+**/htmlcov
+**/dist
+**/build
+**/coverage
+**/playwright-report
+**/test-results
+**/*.tsbuildinfo
+**/.local
+**/*.log
+**/.idea
