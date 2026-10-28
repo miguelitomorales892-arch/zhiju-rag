@@ -1,0 +1,35 @@
+# Local secrets; public examples remain versioned.
+.env
+.env.*
+!.env.example
+
+# Python environments and generated caches.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Frontend dependencies, builds and test outputs.
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Runtime data belongs outside the repository; exclude accidental local copies.
+.local/
+*.log
+
+# Machine-specific editor state.
+.idea/
+.DS_Store
+Thumbs.db
