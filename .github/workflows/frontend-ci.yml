@@ -1,0 +1,48 @@
+name: 前端检查
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: windows-2025
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: frontend
+
+    steps:
+      - name: 获取代码
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 准备 Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: frontend/.node-version
+          architecture: x64
+          package-manager-cache: false
+
+      # 从项目声明读取 pnpm 版本，避免在工作流里维护第二份版本号。
+      - name: 准备 pnpm
+        run: npm install --global (node -p "require('./package.json').packageManager")
+
+      - name: 按锁文件安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 检查类型
+        run: pnpm typecheck
+
+      - name: 运行测试
+        run: pnpm test
+
+      - name: 构建前端
+        run: pnpm build

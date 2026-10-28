@@ -39,7 +39,7 @@
 | Embedding / Reranker | Qwen3-Embedding-0.6B / Qwen3-Reranker-0.6B 为候选；实际服务模型与修订待确定 | 第 6 节；维度、协议和索引版本随实现固定 | S-04 Embedding，S-07 重排；不是已部署的模型 |
 | OCR 资源与系统依赖 | Docling / RapidOCR 模型修订、哈希、缓存；解析库所需 Linux 动态库待目标镜像导入验证 | 后续文档 worker Dockerfile 与模型资源配置 | S-09/12 逐项确定；当前没有下载模型或安装系统库 |
 | 配置、原件和持久化数据 | 分离开发/测试/生产配置；原件、数据库、向量、日志、缓存与备份 | 开发配置在不提交的根 .env；数据在仓库外 .local/；样例和部署定义可提交 | 随功能建立；路径、凭据、权限、备份恢复均需核验 |
-| 评测与自动检查 | 固定开发集与独立测试集；pytest / Vitest / Playwright；最小 GitHub Actions | 可公开测试及 CI 随源码进入仓库；私有资料与结果在 .local/ | S-01 建检查基线，评测贯穿功能；CI 尚未建立 |
+| 评测与自动检查 | 固定开发集与独立测试集；pytest / Vitest / Playwright；最小 GitHub Actions | 可公开测试及 CI 随源码进入仓库；私有资料与结果在 .local/ | S-01 建前后端无密钥检查基线，评测贯穿功能；云端结果见 Actions |
 
 这份清单覆盖当前已约定的整体方案。供应商模型、OCR 资源及镜像系统库等尚需实际选择或运行验证的项目也列在表中，明确待办条件；“已列入清单”不表示已经安装或完成选定。无需额外安装的能力使用已有组件：前端 HTTP/SSE 用 fetch/AbortController，日志先用 Python logging，Agent 先沿用 LangChain；暂不引入独立模型推理平台或另一套监控基础设施。
 
@@ -110,7 +110,7 @@ pnpm --version
 pnpm install --frozen-lockfile
 ```
 
-运行 `pnpm dev` 启动页面，`pnpm test` 执行请求/组件/开发配置测试，`pnpm typecheck` 检查类型，`pnpm build` 先检查类型再构建。当前未配置 ESLint 与 CI；它们属于后续 S-01 检查基线。没有全局放开依赖脚本。开发代理仅读取根 .env 中的四个公开参数，进程环境变量优先；仅把公开 API 前缀传给浏览器。服务端默认 localhost 回环地址和严格端口，部署时另行设置反向代理。
+运行 `pnpm dev` 启动页面，`pnpm test` 执行请求/组件/开发配置测试，`pnpm typecheck` 检查类型，`pnpm build` 先检查类型再构建。[前端 CI](../.github/workflows/frontend-ci.yml) 在 Windows x64 上使用相同命令，Node 与 pnpm 版本分别读取 .node-version 和 package.json，使用 frozen-lockfile 安装；测试模拟 API 响应，无需实际 .env 或后端服务。当前未配置 ESLint，类型检查不等同于 lint。没有全局放开依赖脚本。开发代理仅读取根 .env 中的四个公开参数，进程环境变量优先；仅把公开 API 前缀传给浏览器。服务端默认 localhost 回环地址和严格端口，部署时另行设置反向代理。
 
 仅重新解析锁文件、不安装的维护命令：
 
@@ -209,4 +209,4 @@ Celery 使用同一后端 Python 包，不另建独立业务项目。文档清�
 - 后端最小 API、配置与 5 项测试已运行通过；httpx 弃用警告尚未处理。五份完整方案锁文件仍属于静态解析结果，不表示整套依赖都安装或运行通过。
 - 六个容器镜像完成 registry manifest、摘要与 Linux amd64 核验；未拉取、扫描镜像层或执行容器。
 - 尚未进行 Docker Compose 渲染、数据库/队列联调、模型调用、OCR 资源下载和效果验证。环境阶段出现冲突时调整声明与锁定文件，不能绕过约束声称通过。
-- 尚未实现知识库业务、CI 或完整部署定义。当前最小前后端可联调，不代表完整 RAG 应用已完成。
+- 已提供前后端 CI 配置；知识库业务与完整部署定义尚未实现。当前最小前后端可联调，不代表完整 RAG 应用已完成；云端检查结果以 Actions 页面为准。

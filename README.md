@@ -29,13 +29,15 @@ pnpm dev
 
 统一入口：**[全项目依赖总清单与环境准备](docs/environment.md)**。开头的总表覆盖开发工具、前后端、后台任务、数据库/队列/检索、容器、模型/OCR、配置数据及测试交付，列出版本、声明位置与启用阶段；后续各节提供具体说明。各生态的安装文件按用途分别维护。
 
-## 后端自动检查
+## 自动检查
 
 [GitHub Actions 配置](.github/workflows/backend-ci.yml) 在推送、拉取请求或手动触发时检查后端。运行环境为 Windows x64 / Python 3.14.9，依次执行依赖一致性检查、Ruff 规范与格式检查、mypy 和 pytest。
 
-工作流用根 requirements-dev.txt 约束版本，为当前 API 和检查工具生成临时安装清单，再校验哈希并安装；不会安装整套未来功能依赖。临时清单不写入仓库，测试不需要本机 .env、模型密钥或数据库。当前工作流仅覆盖后端，前端与 Linux 服务运行验证另行安排。
+工作流用根 requirements-dev.txt 约束版本，为当前 API 和检查工具生成临时安装清单，再校验哈希并安装；不会安装整套未来功能依赖。临时清单不写入仓库，测试不需要本机 .env、模型密钥或数据库。
 
 本地 Ruff 和 mypy 从 backend 目录运行，pytest 从 backend/src 目录运行，以保持源码路径解析与 CI 一致。云端执行结果以仓库 Actions 页面为准。
+
+[前端工作流](.github/workflows/frontend-ci.yml) 在相同事件下使用 Windows x64 检查前端。Node 版本读取 frontend/.node-version，pnpm 版本读取 frontend/package.json 的 packageManager 字段；在 frontend 目录执行 pnpm install --frozen-lockfile、pnpm typecheck、pnpm test 和 pnpm build。安装严格遵守锁文件，测试模拟 API 响应，不需要启动后端或提供实际 .env；生产构建不会自动发布网站。Linux 服务及真实端到端联调不属于这两个工作流的检查范围。
 
 ## 根目录配置与安装入口
 
