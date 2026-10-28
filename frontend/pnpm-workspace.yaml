@@ -1,0 +1,12 @@
+# A single frontend package; this file also holds pnpm 11 project settings.
+nodeVersion: 24.22.1
+engineStrict: true
+strictPeerDependencies: true
+autoInstallPeers: true
+saveExact: true
+# Reject a mismatched package manager instead of downloading one automatically.
+pmOnFail: error
+supportedArchitectures:
+  os: [win32, linux]
+  cpu: [x64]
+  libc: [glibc]

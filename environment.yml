@@ -1,0 +1,10 @@
+name: zhiju-rag
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  # Standard CPython build, not the free-threaded cp314t variant.
+  - python=3.14.9=*_cp314
+  - pip
+# Python application dependencies are installed from the appropriate generated
+# requirements file, not duplicated here. This file has not been executed.

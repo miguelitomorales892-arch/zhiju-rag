@@ -1,0 +1,84 @@
+[project]
+name = "zhiju-rag"
+version = "0.1.0"
+description = "Technical documentation and project knowledge RAG application"
+requires-python = ">=3.14.9,<3.15"
+
+# Sole manually maintained Python dependency declaration.
+# Stable versions checked on 2026-10-23; runtime validation is still pending.
+# Application packaging/build configuration will be added with the source package.
+dependencies = [
+    "fastapi==0.161.1",
+    "uvicorn==0.54.0",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "python-multipart==0.0.32",
+    "langchain==1.4.7",
+    "langchain-core==1.7.0",
+    "langchain-openai==1.7.2",
+    "langchain-text-splitters==1.1.3",
+    "qdrant-client==1.20.0",
+    "sqlalchemy[asyncio]==2.1.6",
+    "alembic==1.20.1",
+    "psycopg[binary]==3.3.6",
+    "httpx==0.28.1",
+    "pwdlib[argon2]==0.3.1",
+    "markdown-it-py==4.2.0",
+]
+
+[project.optional-dependencies]
+# Linux workers/dispatcher only; do not run Celery workers on native Windows.
+worker = [
+    "celery[redis]==5.6.3",
+    # Kombu 5.6.2 requires redis<6.5; redis 8.1.0 does not resolve.
+    "redis==6.4.0",
+]
+# Add with the worker extra for PDF/DOCX/HTML and OCR stages, not for the API.
+documents = [
+    "docling[rapidocr]==2.142.1",
+    # Official CPU wheels: CPython 3.14, Linux x86_64, glibc >= 2.28.
+    # Direct URLs keep the generated pip requirements self-contained without
+    # relying on uv-only index configuration or a global extra package index.
+    "torch @ https://download-r2.pytorch.org/whl/cpu/torch-2.14.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=35103e180214793207f95d7e12e100ecba3ace6f5fb37e1fcefbb07e096ed180",
+    "torchvision @ https://download-r2.pytorch.org/whl/cpu/torchvision-0.29.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=265b7c27a54bd17fad35494e478ddcf9028187898a8b1c73df515b8be83bc44f",
+]
+
+[dependency-groups]
+dev = [
+    "ruff==0.17.2",
+    "mypy==2.4.0",
+    "pytest==9.1.1",
+    "httpx2==2.16.0",
+    "pytest-asyncio==1.4.0",
+    "pytest-cov==7.1.0",
+    "build==1.6.1",
+]
+
+[tool.ruff]
+# 按项目使用的 Python 3.14 语法检查。
+target-version = "py314"
+
+# 格式化时的目标行宽。
+line-length = 88
+
+# 帮助识别 src 下的本项目模块，例如 zhiju。
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.14"
+
+# 让类型检查器找到 src 下的 zhiju 包。
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
+
+# 启用严格检查，包括要求函数有完整的类型注解。
+strict = true
+
+# 帮助 mypy 理解 Pydantic 模型和 Settings。
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+# 按声明的字段类型检查代码中直接传入的参数。
+init_typed = true

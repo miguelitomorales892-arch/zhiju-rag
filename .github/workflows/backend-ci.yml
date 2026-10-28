@@ -1,0 +1,78 @@
+name: 后端检查
+
+# 推送代码、提交拉取请求或手动操作时触发。
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: windows-2025
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: 获取代码
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 准备 Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14.9"
+          architecture: x64
+
+      - name: 准备 uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.19"
+          enable-cache: false
+
+      # 临时清单只保留当前检查所需依赖，版本沿用根目录的开发锁。
+      - name: 根据现有锁文件生成当前检查所需的临时清单
+        run: >-
+          @("fastapi", "uvicorn", "pydantic", "pydantic-settings",
+          "pytest", "httpx2", "ruff", "mypy") |
+          uv pip compile -
+          --constraints requirements-dev.txt
+          --python-version 3.14.9
+          --python-platform x86_64-pc-windows-msvc
+          --only-binary :all:
+          --no-python-downloads
+          --generate-hashes
+          --default-index https://pypi.org/simple
+          --output-file "$env:RUNNER_TEMP/backend-ci-requirements.txt"
+
+      - name: 安装检查依赖并校验哈希
+        run: >-
+          uv pip install --system
+          --require-hashes
+          --only-binary :all:
+          --requirements "$env:RUNNER_TEMP/backend-ci-requirements.txt"
+
+      - name: 检查依赖一致性
+        run: python -m pip check
+
+      - name: 检查代码规范
+        working-directory: backend
+        run: python -m ruff check --config pyproject.toml src tests
+
+      - name: 检查代码格式
+        working-directory: backend
+        run: python -m ruff format --check --config pyproject.toml src tests
+
+      - name: 检查类型
+        working-directory: backend
+        run: python -m mypy --config-file pyproject.toml src tests
+
+      - name: 运行测试
+        working-directory: backend/src
+        run: python -m pytest ../tests -v
